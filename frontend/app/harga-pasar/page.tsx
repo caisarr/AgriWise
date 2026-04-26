@@ -21,10 +21,18 @@ const TREND_CONFIG: Record<string, { icon: React.ElementType; color: string; bg:
 }
 
 const COMMODITY_ICONS: Record<string, string> = {
-  cabai_merah: '🌶️', bawang_merah: '🧅', tomat: '🍅', kentang: '🥔',
-  wortel: '🥕', bayam: '🥬', kangkung: '🌿', jagung: '🌽',
-  singkong: '🫘', padi: '🌾', bawang_putih: '🧄', sawi: '🥗',
-  kacang_panjang: '🫛',
+  // Sayuran Daun & Bunga
+  bayam: '🥬', kangkung: '🌿', sawi_hijau: '🥬', sawi_putih: '🥬', kubis: '🥬', brokoli: '🥦', kembang_kol: '🥦', seledri: '🌿', daun_bawang: '🧅',
+  // Sayuran Buah & Polong
+  tomat: '🍅', cabai_merah: '🌶️', cabai_rawit: '🌶️', cabai_hijau: '🌶️', terong: '🍆', timun: '🥒', kacang_panjang: '🫛', buncis: '🫛', labu_siam: '🍐', pare: '🥒',
+  // Umbi & Akar
+  bawang_merah: '🧅', bawang_putih: '🧄', bawang_bombay: '🧅', kentang: '🥔', wortel: '🥕', singkong: '🫘', ubi_jalar: '🍠', jahe: '🫚', kunyit: '🫚', lengkuas: '🫚',
+  // Pangan Pokok & Palawija
+  padi: '🌾', jagung: '🌽', kedelai: '🫘', kacang_tanah: '🥜', kacang_hijau: '🫘',
+  // Buah-buahan
+  pisang: '🍌', semangka: '🍉', melon: '🍈', pepaya: '🥭', jeruk: '🍊', mangga: '🥭', alpukat: '🥑', nanas: '🍍', apel: '🍎',
+  // Perkebunan & Komersial
+  kelapa_sawit: '🌴', kopi_arabika: '☕', kopi_robusta: '☕', kakao: '🍫', karet: '🌳', tebu: '🎋', cengkeh: '🍂', lada: '🧂'
 }
 
 export default function PasarPage() {
