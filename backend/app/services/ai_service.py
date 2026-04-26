@@ -3,6 +3,7 @@ from google import genai
 from google.genai import types
 from app.core.config import settings
 from app.models.schemas import RecommendRequest
+from app.services.enrichment_service import enrich_input
 
 # Initialize client only if API key is provided
 client = None
@@ -32,28 +33,52 @@ INFORMASI SUMBER:
 Jawab HANYA dengan JSON valid, tanpa teks tambahan, markdown, atau penjelasan."""
 
 def build_prompt(req: RecommendRequest, weather_data: dict) -> str:
-    # Hitung informasi tambahan yang berguna untuk AI
-    elevation_zone = "dataran rendah (0-300m)" if req.elevation_m < 300 else \
-                     "dataran menengah (300-700m)" if req.elevation_m < 700 else \
-                     "dataran tinggi (700m+)"
+    # Pre-enrich data petani menggunakan enrichment service
+    enriched = enrich_input(
+        planting_date=req.planting_date,
+        elevation_m=req.elevation_m,
+        province=req.province,
+        city=req.city,
+        soil_type=req.soil_type,
+        water_source=req.water_source,
+        land_area_m2=req.land_area_m2,
+        budget_idr=req.budget_idr,
+    )
     
+    season = enriched["season"]
     budget_info = f"Rp {req.budget_idr:,}" if req.budget_idr else 'tidak diketahui'
     land_info = f"{req.land_area_m2} m²" if req.land_area_m2 else 'tidak diketahui'
     
-    weather_section = "DATA CUACA REAL-TIME (dari OpenWeatherMap):\n"
+    # Build weather section
+    weather_section = "DATA CUACA REAL-TIME (OpenWeatherMap):\n"
     if weather_data:
         weather_section += f"- Suhu saat ini: {weather_data.get('temperature', 'N/A')}°C\n"
         weather_section += f"- Kelembaban: {weather_data.get('humidity', 'N/A')}%\n"
         weather_section += f"- Estimasi curah hujan: {weather_data.get('rainfall', 'N/A')} mm/bulan\n"
         weather_section += f"- Kondisi langit: {weather_data.get('description', 'N/A')}\n"
     else:
-        weather_section += "- Data cuaca tidak tersedia. Gunakan Google Search untuk mencari cuaca wilayah ini.\n"
+        weather_section += "- Data cuaca tidak tersedia dari sensor. Gunakan Google Search untuk mencari data BMKG.\n"
 
-    return f"""Berikan 6 rekomendasi tanaman berdasarkan profil berikut:
+    # Build growing months forecast
+    growing_forecast = ""
+    if season.get("growing_months"):
+        growing_forecast = "PRAKIRAAN IKLIM SELAMA MASA TANAM:\n"
+        for gm in season["growing_months"]:
+            growing_forecast += f"- {gm['bulan']}: prediksi musim {gm['prediksi']}\n"
 
-PROFIL LAHAN & PETANI:
+    # Build search hints
+    search_section = ""
+    if enriched["search_hints"]:
+        search_section = "KATA KUNCI PENCARIAN YANG DISARANKAN:\n"
+        for hint in enriched["search_hints"]:
+            search_section += f"- \"{hint}\"\n"
+
+    return f"""Berikan 6 rekomendasi tanaman berdasarkan ANALISIS LENGKAP berikut:
+
+═══ PROFIL LAHAN & PETANI ═══
 - Rencana Tanggal Tanam: {req.planting_date}
-- Ketinggian lokasi: {req.elevation_m} mdpl ({elevation_zone})
+- Ketinggian: {req.elevation_m} mdpl → Zona: {enriched['elevation_zone']}
+- Estimasi suhu berdasarkan elevasi: {enriched['temp_range']}
 - Provinsi: {req.province or 'tidak diketahui'}
 - Kota/Kabupaten: {req.city or 'tidak diketahui'}
 - Jenis Tanah: {req.soil_type or 'tidak diketahui'}
@@ -62,15 +87,26 @@ PROFIL LAHAN & PETANI:
 - Luas lahan: {land_info}
 - Budget modal: {budget_info}
 
+═══ ANALISIS SISTEM (pre-computed) ═══
+- Musim saat tanam: {season.get('season_name', '?')} ({season.get('season_phase', '?')})
+- Tanaman cocok zona ini: {enriched['elevation_crop_hints']}
+- Analisis tanah: {enriched['soil_analysis'] or 'tidak ada data'}
+- Analisis air: {enriched['water_analysis'] or 'tidak ada data'}
+- Analisis budget: {enriched['budget_analysis'] or 'tidak ada data'}
+- Kepercayaan data musim: {season.get('confidence', 'rendah')}
+
+{growing_forecast}
 {weather_section}
+{search_section}
+═══ INSTRUKSI WAJIB ═══
+1. GUNAKAN Google Search untuk mencari harga pasar terbaru dari PIHPS/BPS/Panel Harga Pangan untuk setiap komoditas.
+2. GUNAKAN Google Search untuk mencari prakiraan cuaca BMKG terbaru untuk {req.province or req.city or 'Indonesia'}.
+3. COCOKKAN tanaman dengan analisis sistem di atas (tanah, air, suhu, musim).
+4. Pilih 6 tanaman PALING cocok dan menguntungkan.
+5. Urutkan dari ROI tertinggi ke terendah.
+6. Setiap reason HARUS menyebut data spesifik (suhu, curah hujan, pH tanah).
 
-INSTRUKSI:
-1. Cari via Google Search: harga pasar terbaru setiap komoditas dari PIHPS/BPS.
-2. Cari via Google Search: prakiraan cuaca BMKG untuk {req.province or req.city or 'Indonesia'} bulan ini.
-3. Pilih 6 tanaman yang PALING cocok dan menguntungkan untuk kondisi di atas.
-4. Urutkan dari ROI tertinggi ke terendah.
-
-FORMAT JSON YANG WAJIB DIKEMBALIKAN:
+FORMAT JSON WAJIB:
 {{
   "recommendations": [
     {{
