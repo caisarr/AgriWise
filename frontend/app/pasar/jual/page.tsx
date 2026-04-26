@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { Store, Upload, CheckCircle2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const rawAPI = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API = rawAPI.replace(/\/+$/, '')
 
 export default function JualPage() {
   const router = useRouter()

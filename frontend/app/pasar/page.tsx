@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, Search, Filter, Plus, MessageCircle, MapPin, Package } from 'lucide-react'
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const rawAPI = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API = rawAPI.replace(/\/+$/, '')
 
 interface Product {
   id: string

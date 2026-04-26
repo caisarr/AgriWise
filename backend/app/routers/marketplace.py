@@ -3,7 +3,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from app.services.supabase_service import supabase
 
-router = APIRouter(prefix="/api/marketplace", tags=["marketplace"])
+router = APIRouter(prefix="/api", tags=["marketplace"])
 
 class ProductCreate(BaseModel):
     seller_name: str
@@ -17,7 +17,7 @@ class ProductCreate(BaseModel):
     location: str
     image_url: Optional[str] = None
 
-@router.get("/")
+@router.get("/marketplace")
 def get_products(category: Optional[str] = None, q: Optional[str] = None):
     query = supabase.table("marketplace_products").select("*").order("created_at", desc=True)
     
@@ -29,7 +29,7 @@ def get_products(category: Optional[str] = None, q: Optional[str] = None):
     res = query.execute()
     return {"products": res.data}
 
-@router.post("/")
+@router.post("/marketplace")
 def create_product(product: ProductCreate):
     try:
         data = product.dict()
@@ -40,7 +40,7 @@ def create_product(product: ProductCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/{product_id}")
+@router.get("/marketplace/{product_id}")
 def get_product(product_id: str):
     res = supabase.table("marketplace_products").select("*").eq("id", product_id).execute()
     if not res.data:
