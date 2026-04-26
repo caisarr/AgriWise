@@ -31,7 +31,9 @@ export default function CropCard({ crop, isTopChoice }: Props) {
   const { prices } = useLivePrices([crop.crop_slug])
   const livePrice  = prices[crop.crop_slug]
 
-  const displayPrice = livePrice?.price_per_kg ?? crop.db_price_per_kg ?? crop.avg_price_per_kg
+  const rawPrice = livePrice?.price_per_kg ?? crop.db_price_per_kg ?? crop.avg_price_per_kg ?? 0
+  const displayPrice = rawPrice > 0 ? rawPrice : crop.avg_price_per_kg || 0
+  const hasPrice     = displayPrice > 0
   const isLive       = !!livePrice
   const diff = DIFFICULTY[crop.difficulty_level]
   const TrendIcon = TREND_ICON[crop.price_trend] ?? Minus
@@ -77,8 +79,14 @@ export default function CropCard({ crop, isTopChoice }: Props) {
             )}
           </p>
           <p className="text-[15px] font-bold text-white">
-            Rp {displayPrice.toLocaleString('id-ID')}
-            <span className="text-[11px] font-normal ml-1" style={{ color: 'var(--text-dim)' }}>/kg</span>
+            {hasPrice ? (
+              <>
+                Rp {displayPrice.toLocaleString('id-ID')}
+                <span className="text-[11px] font-normal ml-1" style={{ color: 'var(--text-dim)' }}>/kg</span>
+              </>
+            ) : (
+              <span className="text-[13px] font-medium" style={{ color: 'var(--text-dim)' }}>Memuat data...</span>
+            )}
           </p>
           {livePrice?.price_min && livePrice?.price_max && (
             <p className="text-[11px] mt-1" style={{ color: 'var(--text-dim)' }}>

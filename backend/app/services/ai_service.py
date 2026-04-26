@@ -14,7 +14,7 @@ SYSTEM_PROMPT = """Kamu adalah AgriWise AI, asisten pertanian tingkat pakar yang
 
 ATURAN KETAT AKURASI:
 1. WAJIB gunakan Google Search untuk mencari data PIHPS (Pusat Informasi Harga Pangan Strategis) atau sumber harga resmi BPS, Kementan, BMKG, atau Panel Harga Pangan Nasional untuk setiap tanaman yang kamu rekomendasikan.
-2. Harga yang kamu masukkan di field "avg_price_per_kg" HARUS berasal dari data pencarian internet hari ini, BUKAN dari pengetahuan umummu. Jika tidak ditemukan data, tulis 0 dan beri catatan di field "price_source".
+2. Harga yang kamu masukkan di field "avg_price_per_kg" HARUS berasal dari data pencarian internet hari ini, BUKAN dari pengetahuan umummu. Jika data real-time tidak ditemukan untuk komoditas tertentu, gunakan harga terakhir yang kamu ketahui dan tulis "estimasi" di field "price_source". JANGAN PERNAH menulis 0 — selalu berikan angka harga terbaik yang kamu bisa.
 3. Untuk "price_trend", bandingkan harga minggu ini vs 2-4 minggu lalu dari hasil pencarianmu. Jangan mengarang tren.
 4. Untuk "estimated_yield_per_100m2_kg", gunakan data hasil panen rata-rata dari Kementan atau jurnal pertanian Indonesia, bukan estimasi umum.
 5. Untuk "harvest_duration_days", gunakan data varietas yang paling umum digunakan di provinsi tersebut.
