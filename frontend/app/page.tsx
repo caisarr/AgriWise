@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Sprout, CalendarDays, Calculator, ArrowRight, CloudRain, Store } from 'lucide-react'
+import { Sprout, CalendarDays, Calculator, ArrowRight, CloudRain, Store, ShoppingBag } from 'lucide-react'
 
 const features = [
   {
@@ -13,8 +13,17 @@ const features = [
   },
   {
     href: '/pasar',
+    icon: ShoppingBag,
+    title: 'Marketplace',
+    desc: 'Jual beli hasil panen dan sarana pertanian langsung dengan petani lain.',
+    gradient: 'from-blue-500/20 to-blue-500/5',
+    iconBg: 'bg-blue-500/15',
+    iconColor: 'text-blue-400',
+  },
+  {
+    href: '/harga-pasar',
     icon: Store,
-    title: 'Pasar Komoditas',
+    title: 'Harga Pasar',
     desc: 'Pantau harga pasar komoditas pertanian secara real-time.',
     gradient: 'from-orange-500/20 to-orange-500/5',
     iconBg: 'bg-orange-500/15',

@@ -11,19 +11,38 @@ from app.core.config import settings
 
 # Mapping tanaman → keyword pencarian harga
 CROP_LIST = [
-    ("cabai_merah",  "Cabai Merah"),
-    ("bawang_merah", "Bawang Merah"),
-    ("tomat",        "Tomat"),
-    ("kentang",      "Kentang"),
-    ("wortel",       "Wortel"),
-    ("bayam",        "Bayam"),
-    ("kangkung",     "Kangkung"),
-    ("jagung",       "Jagung"),
-    ("singkong",     "Singkong"),
-    ("padi",         "Padi (Gabah)"),
-    ("bawang_putih", "Bawang Putih"),
-    ("sawi",         "Sawi"),
-    ("kacang_panjang","Kacang Panjang"),
+    # Sayuran
+    ("cabai_merah",    "Cabai Merah"),
+    ("cabai_rawit",    "Cabai Rawit"),
+    ("bawang_merah",   "Bawang Merah"),
+    ("bawang_putih",   "Bawang Putih"),
+    ("tomat",          "Tomat"),
+    ("kentang",        "Kentang"),
+    ("wortel",         "Wortel"),
+    ("bayam",          "Bayam"),
+    ("kangkung",       "Kangkung"),
+    ("sawi",           "Sawi"),
+    ("kacang_panjang", "Kacang Panjang"),
+    ("terong",         "Terong"),
+    ("kubis",          "Kubis (Kol)"),
+    ("buncis",         "Buncis"),
+    ("timun",          "Timun"),
+    ("labu_siam",      "Labu Siam"),
+    # Pangan pokok
+    ("padi",           "Padi (Gabah)"),
+    ("jagung",         "Jagung"),
+    ("singkong",       "Singkong"),
+    ("kedelai",        "Kedelai"),
+    ("kacang_tanah",   "Kacang Tanah"),
+    ("ubi_jalar",      "Ubi Jalar"),
+    # Buah
+    ("pisang",         "Pisang"),
+    ("semangka",       "Semangka"),
+    ("melon",          "Melon"),
+    ("pepaya",         "Pepaya"),
+    ("jeruk",          "Jeruk"),
+    ("mangga",         "Mangga"),
+    ("jambu_biji",     "Jambu Biji"),
 ]
 
 async def fetch_and_update_prices():

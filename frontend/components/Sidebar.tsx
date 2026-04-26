@@ -1,12 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Sprout, Calculator, CalendarDays, History, Leaf, Store } from 'lucide-react'
+import { Home, Sprout, Calculator, CalendarDays, History, Leaf, Store, ShoppingBag } from 'lucide-react'
 
 const links = [
   { href: '/',          label: 'Dashboard',        icon: Home },
   { href: '/recommend', label: 'Rekomendasi',      icon: Sprout },
-  { href: '/pasar',     label: 'Pasar Komoditas',  icon: Store },
+  { href: '/pasar',     label: 'Marketplace',      icon: ShoppingBag },
+  { href: '/harga-pasar',label: 'Harga Pasar',     icon: Store },
   { href: '/kalender',  label: 'Kalender Tanam',   icon: CalendarDays },
   { href: '/kalkulator',label: 'Kalkulator ROI',   icon: Calculator },
   { href: '/history',   label: 'Riwayat',          icon: History },
