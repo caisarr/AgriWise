@@ -19,47 +19,28 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── Smart CORS: support wildcard patterns like *.vercel.app ──
-def is_origin_allowed(origin: str) -> bool:
-    """Check if origin matches any allowed pattern (supports wildcards)."""
-    for pattern in settings.origins_list:
-        pattern = pattern.strip()
-        if pattern == "*":
-            return True
-        # Convert wildcard pattern to regex: *.vercel.app → .*\.vercel\.app
-        regex = pattern.replace(".", r"\.").replace("*", ".*")
-        if re.fullmatch(regex, origin):
-            return True
-    return False
+# Pisahkan origins biasa dan regex
+origins = []
+regex_patterns = []
 
-class DynamicCORSMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        origin = request.headers.get("origin", "")
-        
-        # Handle preflight OPTIONS requests
-        if request.method == "OPTIONS":
-            if is_origin_allowed(origin):
-                return Response(
-                    status_code=200,
-                    headers={
-                        "Access-Control-Allow-Origin": origin,
-                        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                        "Access-Control-Allow-Headers": "*",
-                        "Access-Control-Max-Age": "600",
-                    },
-                )
-            return Response(status_code=400)
-        
-        response = await call_next(request)
-        
-        if origin and is_origin_allowed(origin):
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-            response.headers["Access-Control-Allow-Headers"] = "*"
-        
-        return response
+for o in settings.origins_list:
+    o = o.strip()
+    if "*" in o:
+        # Convert https://*.vercel.app -> https://.*\.vercel\.app
+        regex_patterns.append(o.replace(".", r"\.").replace("*", ".*"))
+    else:
+        origins.append(o)
 
-app.add_middleware(DynamicCORSMiddleware)
+origin_regex = f"^({'|'.join(regex_patterns)})$" if regex_patterns else None
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_origin_regex=origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(recommend.router)
 app.include_router(prices.router)
