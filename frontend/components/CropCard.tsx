@@ -89,6 +89,11 @@ export default function CropCard({ crop, isTopChoice }: Props) {
             <TrendIcon className="w-3.5 h-3.5" />
             {crop.price_trend}
           </div>
+          {(crop as any).price_source && (
+            <p className="text-[10px] mt-1.5 italic" style={{ color: 'var(--text-dim)' }}>
+              Sumber: {(crop as any).price_source}
+            </p>
+          )}
         </div>
 
         {/* Estimasi */}
@@ -121,6 +126,12 @@ export default function CropCard({ crop, isTopChoice }: Props) {
           <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-400" />
           <span>{crop.tips}</span>
         </div>
+        {(crop as any).weather_insight && (
+          <div className="flex items-start gap-2.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+            <span className="text-sky-400 flex-shrink-0 mt-0.5">🌤</span>
+            <span className="italic">{(crop as any).weather_insight}</span>
+          </div>
+        )}
       </div>
 
       <PriceChart cropSlug={crop.crop_slug} cropLabel={crop.crop_name} currentPrice={displayPrice} />

@@ -263,6 +263,20 @@ export default function RecommendPage() {
             ))}
           </div>
 
+          {/* Data Sources */}
+          {(result as any).data_sources && (result as any).data_sources.length > 0 && (
+            <div className="glass-card p-4 mt-6 flex items-start gap-3"
+              style={{ borderColor: 'rgba(99, 102, 241, 0.2)', background: 'rgba(99, 102, 241, 0.05)' }}>
+              <span className="text-indigo-400 text-sm flex-shrink-0 mt-0.5">📊</span>
+              <div>
+                <p className="text-[11px] font-bold text-indigo-300 mb-1 uppercase tracking-wider">Sumber Data</p>
+                <p className="text-[12px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {(result as any).data_sources.join(' · ')}
+                </p>
+              </div>
+            </div>
+          )}
+
           <ChatWidget context={JSON.stringify(result.recommendations)} />
         </div>
       )}
