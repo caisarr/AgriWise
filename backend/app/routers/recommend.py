@@ -8,6 +8,7 @@ from app.services.supabase_service import (
 )
 from app.services.ai_service import get_crop_recommendations
 from app.services.weather_service import get_weather_data
+from app.services.validator_service import validate_and_fix_recommendations
 
 router = APIRouter(prefix="/api", tags=["recommend"])
 
@@ -24,6 +25,9 @@ async def recommend(
 
     if not ai_result:
         raise HTTPException(status_code=502, detail="AI service gagal merespons")
+
+    # Validasi & koreksi output AI (tangkap halusinasi)
+    ai_result = validate_and_fix_recommendations(ai_result)
 
     # Enrich harga dari Supabase
     slugs     = [c.get("crop_slug") for c in ai_result.get("recommendations", []) if c.get("crop_slug")]
@@ -57,6 +61,7 @@ async def recommend(
         "recommendation_id": saved.get("id"),
         "recommendations":   ai_result.get("recommendations", []),
         "season_summary":    ai_result.get("season_summary"),
+        "data_sources":      ai_result.get("data_sources", []),
         "weather":           weather_data,
         "duration_ms":       duration_ms,
     }

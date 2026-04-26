@@ -56,6 +56,17 @@ def build_prompt(req: RecommendRequest, weather_data: dict) -> str:
         weather_section += f"- Kelembaban: {weather_data.get('humidity', 'N/A')}%\n"
         weather_section += f"- Estimasi curah hujan: {weather_data.get('rainfall', 'N/A')} mm/bulan\n"
         weather_section += f"- Kondisi langit: {weather_data.get('description', 'N/A')}\n"
+        
+        # Tambahkan data forecast 5 hari jika tersedia
+        fc = weather_data.get("forecast_5d")
+        if fc:
+            weather_section += "\nPRAKIRAAN CUACA 5 HARI KE DEPAN (dari satelit):\n"
+            weather_section += f"- Suhu rata-rata: {fc['avg_temp']}°C (min: {fc['min_temp']}°C, max: {fc['max_temp']}°C)\n"
+            weather_section += f"- Kelembaban rata-rata: {fc['avg_humidity']}%\n"
+            weather_section += f"- Total hujan 5 hari: {fc['total_rain_mm']} mm\n"
+            weather_section += f"- Estimasi curah hujan bulanan: {fc['rain_per_month_est']} mm/bulan\n"
+            rain_pct = round((fc['rainy_periods'] / fc['total_periods']) * 100) if fc['total_periods'] > 0 else 0
+            weather_section += f"- Frekuensi hujan: {rain_pct}% dari waktu ({fc['rainy_periods']}/{fc['total_periods']} periode)\n"
     else:
         weather_section += "- Data cuaca tidak tersedia dari sensor. Gunakan Google Search untuk mencari data BMKG.\n"
 
