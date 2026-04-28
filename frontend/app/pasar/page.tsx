@@ -122,9 +122,9 @@ export default function MarketplacePage() {
 
       {/* Loading */}
       {loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="responsive-grid-4">
           {[1,2,3,4,5,6,7,8].map(i => (
-            <div key={i} className="skeleton h-[320px] rounded-2xl" />
+            <div key={i} className="skeleton h-[280px] sm:h-[320px] rounded-2xl" />
           ))}
         </div>
       )}
@@ -145,7 +145,7 @@ export default function MarketplacePage() {
 
       {/* Product Grid */}
       {!loading && products.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 stagger">
+        <div className="responsive-grid-4 stagger">
           {products.map(p => (
             <div key={p.id} className="glass-card card-hover flex flex-col overflow-hidden group">
               {/* Image */}

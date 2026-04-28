@@ -106,7 +106,7 @@ export default function PasarPage() {
 
       {/* Stats Cards */}
       {prices.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 stagger">
+        <div className="responsive-grid-3 mb-8 stagger">
           {/* Total Komoditas */}
           <div className="glass-card p-5 animate-fade-in-up">
             <div className="flex items-center gap-2 mb-3">
@@ -182,9 +182,9 @@ export default function PasarPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="responsive-grid-3">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="skeleton h-44 rounded-2xl" />
+            <div key={i} className="skeleton h-40 sm:h-44 rounded-2xl" />
           ))}
         </div>
       )}
@@ -204,7 +204,7 @@ export default function PasarPage() {
 
       {/* Commodity Grid */}
       {!loading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger">
+        <div className="responsive-grid-3 stagger">
           {filtered.map((item, idx) => {
             const emoji = COMMODITY_ICONS[item.crop_name] || '🌱'
             const updated = item.recorded_at 

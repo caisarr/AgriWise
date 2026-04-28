@@ -69,20 +69,20 @@ export default function Home() {
       </div>
 
       {/* Hero section */}
-      <div className="glass-card p-12 text-center mb-10 relative overflow-hidden">
+      <div className="glass-card p-6 sm:p-10 lg:p-12 text-center mb-8 relative overflow-hidden">
         {/* Glow accents */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 rounded-full opacity-20 blur-3xl"
           style={{ background: 'linear-gradient(90deg, #059669, #34d399)' }} />
 
         <div className="relative z-10">
-          <p className="text-[11px] tracking-[5px] uppercase font-semibold mb-5" style={{ color: 'var(--accent)' }}>
+          <p className="text-[10px] sm:text-[11px] tracking-[4px] sm:tracking-[5px] uppercase font-semibold mb-4" style={{ color: 'var(--accent)' }}>
             AI untuk Petani Indonesia
           </p>
-          <h1 className="text-5xl font-black text-white mb-5 leading-tight">
-            Selamat Datang di <br />
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">
+            Selamat Datang di{' '}
             <span className="gradient-text">AgriWise</span>
           </h1>
-          <p className="max-w-lg mx-auto text-[15px] leading-relaxed mb-8" style={{ color: 'var(--text-secondary)' }}>
+          <p className="max-w-lg mx-auto text-[13px] sm:text-[15px] leading-relaxed mb-6 sm:mb-8" style={{ color: 'var(--text-secondary)' }}>
             Platform pertanian cerdas yang dilengkapi AI untuk membantu Anda
             merencanakan, mendiagnosis, dan memaksimalkan hasil panen.
           </p>
@@ -98,7 +98,7 @@ export default function Home() {
       </div>
 
       {/* Feature grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 stagger">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 stagger">
         {features.map(f => {
           const Icon = f.icon
           return (
