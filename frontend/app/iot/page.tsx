@@ -8,6 +8,7 @@ const API = rawAPI.replace(/\/+$/, '')
 interface IoTData {
   moisture_percentage: number
   soil_status: string
+  plant_type?: string
   recommendation: string
   color_code: string
   last_updated: string
@@ -36,6 +37,7 @@ export default function IoTPage() {
   const [data, setData] = useState<IoTData | null>(null)
   const [loading, setLoading] = useState(true)
   const [sliderValue, setSliderValue] = useState(45)
+  const [selectedPlant, setSelectedPlant] = useState('Cabai')
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState('')
   const [useBackend, setUseBackend] = useState(true)
@@ -52,13 +54,14 @@ export default function IoTPage() {
       if (json.status === 'success') {
         setData(json.data)
         setSliderValue(json.data.moisture_percentage)
+        if (json.data.plant_type) setSelectedPlant(json.data.plant_type)
         setUseBackend(true)
         setError('')
       }
     } catch {
       setError('Mode simulasi offline aktif — backend belum tersedia.')
       setUseBackend(false)
-      setData(getFallbackData(45))
+      setData(getFallbackData(45, selectedPlant))
     } finally {
       setLoading(false)
     }
@@ -67,74 +70,169 @@ export default function IoTPage() {
   async function handleSimulate(val: number) {
     setSliderValue(val)
     setUpdating(true)
-    // Optimistic update — langsung update gauge/status tanpa menunggu backend
-    setData(getFallbackData(val))
+    // Optimistic update
+    setData(getFallbackData(val, selectedPlant))
     try {
       const res = await fetch(`${API}/api/iot/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ moisture: val })
+        body: JSON.stringify({ moisture: val, plant_type: selectedPlant })
       })
       if (res.ok) {
-        // Setelah backend berhasil diupdate, ambil data resmi dari server
         const statusRes = await fetch(`${API}/api/iot/status`)
         if (statusRes.ok) {
           const json = await statusRes.json()
           if (json.status === 'success') {
             setData(json.data)
+            if (json.data.plant_type) setSelectedPlant(json.data.plant_type)
             setError('')
           }
         }
       }
     } catch {
-      // Tidak perlu fallback lagi — sudah diset di atas secara optimistic
+      // optimistic update dipertahankan
     } finally {
       setUpdating(false)
     }
   }
 
-  function getFallbackData(m: number): IoTData {
+  async function handlePlantChange(ptype: string) {
+    setSelectedPlant(ptype)
+    setUpdating(true)
+    // Optimistic update
+    setData(getFallbackData(sliderValue, ptype))
+    try {
+      const res = await fetch(`${API}/api/iot/simulate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moisture: sliderValue, plant_type: ptype })
+      })
+      if (res.ok) {
+        const statusRes = await fetch(`${API}/api/iot/status`)
+        if (statusRes.ok) {
+          const json = await statusRes.json()
+          if (json.status === 'success') {
+            setData(json.data)
+            if (json.data.plant_type) setSelectedPlant(json.data.plant_type)
+            setError('')
+          }
+        }
+      }
+    } catch {
+      // optimistic fallback dipertahankan
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  function getFallbackData(m: number, ptype: string = 'Cabai'): IoTData {
     let status = "Normal"
-    let rec = "Kondisi kelembaban tanah sangat optimal untuk penyerapan nutrisi. Kelembaban terjaga dengan baik."
+    let rec = `Kondisi kelembaban tanah sangat optimal untuk penyerapan nutrisi. Mendukung penuh fase pertumbuhan ${ptype} dengan produktivitas maksimal.`
     let col = "emerald"
     let steps: IoTData['action_steps'] = [
-      {icon: "✅", title: "Pertahankan Kondisi Saat Ini", detail: "Kelembaban berada di zona ideal (40-70%). Lanjutkan jadwal perawatan rutin tanpa perubahan signifikan pada pola pengairan.", priority: "normal"},
-      {icon: "🌱", title: "Pemupukan Optimal", detail: "Kondisi kelembaban ini sangat ideal untuk pemupukan. Aplikasikan pupuk sesuai jadwal Kalender Tanam agar penyerapan nutrisi oleh akar maksimal.", priority: "normal"},
-      {icon: "🔍", title: "Monitor Hama & Penyakit", detail: "Kelembaban optimal juga menjadi lingkungan yang nyaman bagi hama. Lakukan pengecekan visual rutin pada daun bawah dan batang tanaman.", priority: "normal"},
-      {icon: "📊", title: "Catat Data untuk Analisis", detail: "Dokumentasikan kondisi kelembaban harian untuk membangun pola data jangka panjang. Gunakan catatan ini untuk optimasi jadwal irigasi di musim berikutnya.", priority: "low"},
+      {icon: "✅", title: "Pertahankan Kondisi Saat Ini", detail: `Kelembaban berada di zona ideal (40-70%). Lanjutkan jadwal perawatan rutin ${ptype} tanpa perubahan pengairan.`, priority: "normal"},
+      {icon: "🌱", title: "Pemupukan Masa Generatif/Aktif", detail: `Kondisi tanah sangat mendukung penyerapan hara. Aplikasikan pupuk sesuai jadwal Kalender Tanam ${ptype}.`, priority: "normal"},
+      {icon: "🔍", title: "Monitor Hama & Penyakit", detail: `Lakukan inspeksi rutin pada daun dan batang ${ptype} untuk mendeteksi gejala awal serangan hama.`, priority: "normal"},
+      {icon: "📊", title: "Pencatatan Data Mikro", detail: "Simpan riwayat kelembaban ini sebagai acuan standar kelembaban optimal untuk siklus penanaman di musim mendatang.", priority: "low"},
     ]
+
+    if (ptype === 'Padi Sawah') {
+      rec = "Kondisi kelembaban ideal untuk fase pengeringan berkala (Intermittent Irrigation). Membantu aerasi tanah dan memperkuat batang padi."
+      steps[0].detail = "Biarkan air surut alami hingga kelembaban mendekati 45% sebelum digenang kembali. Sangat baik untuk memacu pertumbuhan akar."
+    } else if (ptype === 'Tomat') {
+      rec = "Kelembaban tanah sangat stabil. Menjamin pembesaran buah Tomat yang seragam dan mencegah risiko pecah buah (fruit cracking)."
+    } else if (ptype === 'Bawang Merah') {
+      rec = "Kondisi kelembaban paling ideal untuk pembentukan dan pembesaran umbi Bawang Merah yang padat dan merah merona."
+    } else if (ptype === 'Jagung') {
+      rec = "Kelembaban tanah sangat mendukung aktivitas metabolisme Jagung. Memacu pertumbuhan batang yang kokoh dan daun hijau gelap."
+    }
+
     if (m < 40) {
       status = "Kering"
-      rec = "Lakukan penyiraman segera. Kelembaban tanah di bawah ambang batas kritis (40%), berisiko memicu stres air."
       col = "red"
-      steps = [
-        {icon: "💧", title: "Penyiraman Segera", detail: "Siram lahan secara merata dengan volume 2-3 liter per m². Gunakan metode tetes (drip) jika tersedia untuk efisiensi air maksimal.", priority: "urgent"},
-        {icon: "🌿", title: "Mulching / Penutupan Tanah", detail: "Tutup permukaan tanah dengan mulsa organik (jerami, sekam padi) setebal 5-10 cm untuk mengurangi evaporasi dan menjaga kelembaban.", priority: "high"},
-        {icon: "🕐", title: "Jadwal Penyiraman Berkala", detail: "Atur penyiraman di pagi hari (06.00-08.00) dan sore hari (16.00-18.00) agar penyerapan optimal dan menghindari penguapan di jam panas.", priority: "high"},
-        {icon: "🧪", title: "Periksa Kondisi Akar", detail: "Cek apakah tanaman mulai menunjukkan gejala layu, daun menguning, atau pengerutan. Jika ya, berikan larutan pupuk cair encer untuk membantu pemulihan.", priority: "medium"},
-        {icon: "⛅", title: "Pasang Peneduh Sementara", detail: "Jika cuaca panas terik, pasang paranet dengan naungan 50-60% untuk mengurangi paparan sinar matahari langsung dan tekanan evapotranspirasi.", priority: "medium"},
-      ]
+      if (ptype === 'Padi Sawah') {
+        rec = "Peringatan Kritis! Tanah sawah mengering di bawah batas minimal (40%). Berisiko menghentikan pembentukan malai dan memicu retakan tanah."
+        steps = [
+          {icon: "🌊", title: "Penggenangan Segera", detail: "Alirkan air ke petak sawah hingga mencapai ketinggian 3-5 cm dari permukaan tanah untuk mengembalikan turgor tanaman.", priority: "urgent"},
+          {icon: "🌱", title: "Pengecekan Retak Tanah", detail: "Periksa retakan tanah. Jika retakan terlalu dalam, tambahkan pupuk organik cair untuk membantu pemulihan bulu akar.", priority: "high"},
+          {icon: "🌾", title: "Babat Gulma Pesaing", detail: "Kondisi kering memicu gulma tumbuh cepat. Lakukan penyiangan mekanis sebelum gulma mendominasi penyerapan nutrisi.", priority: "medium"},
+        ]
+      } else if (ptype === 'Tomat') {
+        rec = "Penyiraman Sangat Mendesak! Kekurangan air drastis pada Tomat memicu gangguan penyerapan kalsium yang menyebabkan ujung buah membusuk (Blossom End Rot)."
+        steps = [
+          {icon: "💧", title: "Siram Area Perakaran", detail: "Berikan air merata di pangkal batang di pagi hari. Hindari membasahi daun untuk mencegah spora jamur.", priority: "urgent"},
+          {icon: "🍅", title: "Semprot Kalsium Foliar", detail: "Untuk mencegah kerontokan bunga dan busuk pantat buah, aplikasikan pupuk kalsium cair melalui daun pada sore hari.", priority: "high"},
+          {icon: "🌿", title: "Pertebal Mulsa Jerami", detail: "Tambahkan penutup tanah di bawah kanopi untuk menjaga kestabilan suhu tanah di siang hari yang terik.", priority: "medium"},
+        ]
+      } else if (ptype === 'Bawang Merah') {
+        rec = "Kritis! Perakaran Bawang Merah sangat dangkal. Tanah yang kering menghambat pembelahan sel umbi secara langsung, membuat umbi kerdil."
+        steps = [
+          {icon: "🚿", title: "Penyiraman Sistem Gembor", detail: "Siram daun dan bedengan menggunakan gembor atau sprikler halus di pagi hari untuk membilas embun dan melembabkan tanah atas.", priority: "urgent"},
+          {icon: "🧅", title: "Cek Tingkat Kepadatan Tanah", detail: "Jika tanah terlalu keras akibat kering, gemburkan perlahan di sela-sela tanaman tanpa merusak umbi yang sedang membesar.", priority: "high"},
+        ]
+      } else if (ptype === 'Jagung') {
+        rec = "Tanah sangat kering! Jika terjadi pada fase berbunga atau pengisian biji, kekeringan akan menyebabkan tongkol kopong."
+        steps = [
+          {icon: "🌊", title: "Penggenangan Alur (Furrow)", detail: "Alirkan air secara melimpah pada alur antar barisan tanaman Jagung hingga meresap ke zona perakaran dalam.", priority: "urgent"},
+          {icon: "🌽", title: "Amankan Fase Pengisian Biji", detail: "Pastikan suplai air cukup selama 2 minggu ke depan agar pengisian pati pada biji jagung maksimal hingga ujung tongkol.", priority: "high"},
+        ]
+      } else {
+        rec = `Lakukan penyiraman segera. Tanaman ${ptype} sangat rentan mengalami kerontokan bunga dan buah jika kelembaban tanah anjlok di bawah ambang kritis (40%).`
+        steps = [
+          {icon: "💧", title: "Penyiraman Segera", detail: `Siram lahan secara merata di pangkal batang ${ptype} dengan volume 2-3 liter per tanaman. Gunakan irigasi tetes jika tersedia.`, priority: "urgent"},
+          {icon: "🌿", title: "Mulching / Penutupan Tanah", detail: "Tutup permukaan tanah dengan mulsa organik (jerami/sekam) setebal 5 cm untuk meredam laju penguapan air di siang hari.", priority: "high"},
+          {icon: "🕐", title: "Jadwal Pengairan Tepat Waktu", detail: "Fokuskan penyiraman pada pagi (06.00-08.00) atau sore hari agar penyerapan air oleh bulu akar berlangsung efektif.", priority: "high"},
+          {icon: "🌶️", title: "Cek Tanda Kerontokan Bunga", detail: `Periksa apakah ada bunga ${ptype} yang menguning dan gugur. Jika ya, berikan semprotan nutrisi mikro dan kalsium setelah disiram.`, priority: "medium"},
+        ]
+      }
     } else if (m > 70) {
       status = "Basah"
-      rec = "Tanah dalam kondisi jenuh air (>70%). Tunda penyiraman dan pastikan sistem drainase berfungsi lancar."
       col = "blue"
-      steps = [
-        {icon: "🚫", title: "Hentikan Penyiraman", detail: "Jangan tambah air ke lahan. Tunda seluruh jadwal penyiraman hingga kelembaban kembali turun ke zona normal (di bawah 70%).", priority: "urgent"},
-        {icon: "🔧", title: "Periksa Sistem Drainase", detail: "Pastikan saluran drainase tidak tersumbat oleh sampah atau sedimen. Buat parit kecil di sekeliling bedengan jika diperlukan.", priority: "urgent"},
-        {icon: "🍃", title: "Aerasi Tanah", detail: "Buat lubang-lubang kecil di sekitar zona perakaran menggunakan garpu tanah untuk memperbaiki sirkulasi udara dan mencegah kondisi anaerob.", priority: "high"},
-        {icon: "⚠️", title: "Tunda Pemupukan", detail: "Jangan melakukan pemupukan saat tanah jenuh air. Pupuk akan larut terbawa air dan tidak terserap optimal.", priority: "high"},
-        {icon: "🍄", title: "Waspadai Jamur & Penyakit", detail: "Kelembaban tinggi mempercepat pertumbuhan jamur patogen. Periksa pangkal batang dan akar. Aplikasikan fungisida nabati jika ditemukan bercak.", priority: "medium"},
-      ]
+      if (ptype === 'Tomat') {
+        rec = "Tanah terlalu basah! Akar Tomat sangat sensitif terhadap genangan yang memicu serangan penyakit layu bakteri dan hawar daun."
+        steps = [
+          {icon: "🚫", title: "Stop Irigasi Total", detail: "Hentikan suplai air ke bedengan. Biarkan sinar matahari dan angin mengeringkan area perakaran.", priority: "urgent"},
+          {icon: "🪓", title: "Perdalam Parit Drainase", detail: "Kuras endapan lumpur di parit antar bedengan agar air sisa hujan dapat segera tuntas mengalir keluar.", priority: "urgent"},
+          {icon: "🍄", title: "Aplikasi Fungisida Preventif", detail: "Segera semprotkan fungisida berbahan aktif tembaga atau agen hayati Trichoderma untuk menekan patogen tular tanah.", priority: "high"},
+        ]
+      } else if (ptype === 'Bawang Merah') {
+        rec = "Bahaya Jenuh Air! Umbi Bawang Merah sangat rentan mengalami busuk leher batang dan serangan jamur Fusarium jika tergenang."
+        steps = [
+          {icon: "🛑", title: "Kuras Genangan Parit", detail: "Pastikan parit drainase benar-benar kering. Bawang merah tidak menoleransi genangan air di area perakaran lebih dari 12 jam.", priority: "urgent"},
+          {icon: "🌬️", title: "Taburkan Kapur Dolomit", detail: "Taburkan sedikit dolomit di permukaan bedengan untuk menaikkan pH tanah yang anjlok akibat genangan air berlebih.", priority: "high"},
+        ]
+      } else if (ptype === 'Jagung') {
+        rec = "Drainase Terhambat! Genangan air berlebih mencuci unsur hara penting dan membuat perakaran Jagung kekurangan oksigen, ditandai dengan daun menguning."
+        steps = [
+          {icon: "🚫", title: "Tunda Pemupukan Nitrogen", detail: "Jangan sebar pupuk Urea saat tanah jenuh air, karena akan langsung tercuci hilang sebelum diserap akar.", priority: "urgent"},
+          {icon: "ho", title: "Sodok Saluran Pembuangan", detail: "Buka ujung parit bedengan agar genangan air segera surut. Jagung membutuhkan tanah yang kaya oksigen untuk bernafas.", priority: "urgent"},
+        ]
+      } else if (ptype === 'Padi Sawah') {
+        rec = "Sawah dalam kondisi tergenang optimal (>70%). Ideal untuk fase pertumbuhan vegetatif awal dan penekanan gulma air."
+        steps = [
+          {icon: "📏", title: "Kontrol Pintu Air", detail: "Pastikan tinggi genangan tidak melebihi 5 cm agar anakan padi tetap mendapatkan sinar matahari dan sirkulasi udara yang cukup.", priority: "normal"},
+          {icon: "🐟", title: "Pemanfaatan Mina Padi", detail: "Jika menerapkan sistem mina padi, pastikan sirkulasi air tetap berputar perlahan untuk suplai oksigen ikan.", priority: "low"},
+        ]
+      } else {
+        rec = `Tanah dalam kondisi jenuh air (>70%). Genangan berlebih pada ${ptype} memicu berkembangnya patogen jamur tular tanah seperti layu Fusarium dan busuk akar.`
+        steps = [
+          {icon: "🚫", title: "Hentikan Irigasi Total", detail: `Tunda seluruh jadwal penyiraman. Tanaman ${ptype} membutuhkan jeda kering agar pori-pori tanah kembali terisi udara.`, priority: "urgent"},
+          {icon: "🔧", title: "Perbaiki Sistem Drainase", detail: "Pastikan saluran air antar bedengan lancar dan tidak tersumbat. Buat parit kecil pembuangan jika terdeteksi genangan lokal.", priority: "urgent"},
+          {icon: "🍃", title: "Aerasi Area Perakaran", detail: "Tusuk-tusuk tanah di sekitar luar tajuk menggunakan garpu tanah untuk membantu penguapan air berlebih dari dalam tanah.", priority: "high"},
+        ]
+      }
     }
+
     return {
       moisture_percentage: m,
       soil_status: status,
+      plant_type: ptype,
       recommendation: rec,
       color_code: col,
       last_updated: new Date().toISOString(),
       device_info: {
         name: "AgriWise Soil Moisture Node v1.0",
-        microcontroller: "Tes",
+        microcontroller: "ESP32 Wi-Fi Enabled",
         sensor_type: "Capacitive / Analog Soil Moisture Probe",
         total_cost_idr: 395000,
         portability: "Portable Base Structure (Pipa PVC & Kayu)",
@@ -224,6 +322,33 @@ export default function IoTPage() {
           <span>{error}</span>
         </div>
       )}
+
+      {/* Pilihan Jenis Tanaman / Target Komoditas */}
+      <div className="glass-card p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-cyan-500/20 bg-gradient-to-r from-cyan-500/[0.02] to-transparent">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🌱</span>
+          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Komoditas Tanam:</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {['Cabai', 'Padi Sawah', 'Tomat', 'Bawang Merah', 'Jagung'].map((ptype) => {
+            const isActive = selectedPlant === ptype;
+            return (
+              <button
+                key={ptype}
+                onClick={() => handlePlantChange(ptype)}
+                disabled={updating}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 ${
+                  isActive
+                    ? 'bg-cyan-400 text-slate-950 shadow-md shadow-cyan-400/20 font-black tracking-wide scale-105'
+                    : 'bg-white/5 hover:bg-white/10 text-slate-400 border border-white/5'
+                }`}
+              >
+                {ptype}
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {loading && !data ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -393,7 +518,7 @@ export default function IoTPage() {
                 <h3 className="text-base font-bold text-white">Langkah Tindakan yang Disarankan</h3>
               </div>
               <p className="text-xs text-slate-400 mb-6 max-w-2xl">
-                Berdasarkan pembacaan sensor kelembaban tanah saat ini ({data.moisture_percentage}% — <span className={colors.text}>{data.soil_status}</span>), berikut langkah-langkah konkret yang perlu diambil:
+                Berdasarkan pembacaan sensor kelembaban tanah saat ini ({data.moisture_percentage}% — <span className={colors.text}>{data.soil_status}</span>) untuk komoditas <span className="text-cyan-400 font-bold">{data.plant_type || selectedPlant}</span>, berikut langkah-langkah konkret yang perlu diambil:
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 stagger">
