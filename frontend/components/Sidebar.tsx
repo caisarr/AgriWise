@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home, Sprout, Calculator, CalendarDays,
-  History, Leaf, Store, ShoppingBag, Menu, X,
+  History, Leaf, Store, ShoppingBag, Menu, X, Cpu,
 } from 'lucide-react'
 
 const links = [
@@ -13,6 +13,7 @@ const links = [
   { href: '/pasar',       label: 'Marketplace',     icon: ShoppingBag },
   { href: '/harga-pasar', label: 'Harga Pasar',     icon: Store },
   { href: '/kalender',    label: 'Kalender Tanam',  icon: CalendarDays },
+  { href: '/iot',         label: 'Sensor IoT',      icon: Cpu },
   { href: '/kalkulator',  label: 'Kalkulator ROI',  icon: Calculator },
   { href: '/history',     label: 'Riwayat',         icon: History },
 ]
@@ -22,7 +23,7 @@ const bottomLinks = [
   { href: '/',          label: 'Home',       icon: Home },
   { href: '/recommend', label: 'Rekomendasi',icon: Sprout },
   { href: '/pasar',     label: 'Pasar',      icon: ShoppingBag },
-  { href: '/kalkulator',label: 'ROI',        icon: Calculator },
+  { href: '/iot',       label: 'IoT',        icon: Cpu },
   { href: '/history',   label: 'Riwayat',    icon: History },
 ]
 

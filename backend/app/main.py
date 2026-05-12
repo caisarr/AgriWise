@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from contextlib import asynccontextmanager
-from app.routers import recommend, prices, chat, diagnosis, calendar, marketplace
+from app.routers import recommend, prices, chat, diagnosis, calendar, marketplace, iot
 from app.services.scheduler import start_scheduler
 from app.core.config import settings
 import re
@@ -48,6 +48,7 @@ app.include_router(chat.router)
 app.include_router(diagnosis.router)
 app.include_router(calendar.router)
 app.include_router(marketplace.router)
+app.include_router(iot.router)
 
 @app.get("/health")
 def health():

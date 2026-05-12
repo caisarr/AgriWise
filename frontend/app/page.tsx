@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Sprout, CalendarDays, Calculator, ArrowRight, CloudRain, Store, ShoppingBag } from 'lucide-react'
+import { Sprout, CalendarDays, Calculator, ArrowRight, CloudRain, Store, ShoppingBag, Cpu } from 'lucide-react'
 
 const features = [
   {
@@ -30,14 +30,22 @@ const features = [
     iconColor: 'text-orange-400',
   },
 
-  {
-    href: '/kalender',
+  { href: '/kalender',
     icon: CalendarDays,
     title: 'Kalender Tanam',
     desc: 'Buat jadwal perawatan tanaman dari hari ke-0 sampai masa panen.',
     gradient: 'from-violet-500/20 to-violet-500/5',
     iconBg: 'bg-violet-500/15',
     iconColor: 'text-violet-400',
+  },
+  {
+    href: '/iot',
+    icon: Cpu,
+    title: 'Monitoring IoT ESP32',
+    desc: 'Pantau kelembaban tanah real-time dan kendalikan pengairan cerdas berbasis sensor.',
+    gradient: 'from-cyan-500/20 to-cyan-500/5',
+    iconBg: 'bg-cyan-500/15',
+    iconColor: 'text-cyan-400',
   },
   {
     href: '/kalkulator',
@@ -76,15 +84,15 @@ export default function Home() {
 
         <div className="relative z-10">
           <p className="text-[10px] sm:text-[11px] tracking-[4px] sm:tracking-[5px] uppercase font-semibold mb-4" style={{ color: 'var(--accent)' }}>
-            AI untuk Petani Indonesia
+            Solusi Regenerasi Petani Muda via AI & IoT
           </p>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">
             Selamat Datang di{' '}
             <span className="gradient-text">AgriWise</span>
           </h1>
           <p className="max-w-lg mx-auto text-[13px] sm:text-[15px] leading-relaxed mb-6 sm:mb-8" style={{ color: 'var(--text-secondary)' }}>
-            Platform pertanian cerdas yang dilengkapi AI untuk membantu Anda
-            merencanakan, mendiagnosis, dan memaksimalkan hasil panen.
+            Platform smart farming untuk generasi penerus. Memadukan asisten AI,
+            sensor kelembaban tanah IoT, dan ekosistem pasar inklusif.
           </p>
           <Link
             href="/recommend"
