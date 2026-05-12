@@ -134,7 +134,7 @@ export default function IoTPage() {
       last_updated: new Date().toISOString(),
       device_info: {
         name: "AgriWise Soil Moisture Node v1.0",
-        microcontroller: "ESP32 Wi-Fi Enabled",
+        microcontroller: "Tes",
         sensor_type: "Capacitive / Analog Soil Moisture Probe",
         total_cost_idr: 395000,
         portability: "Portable Base Structure (Pipa PVC & Kayu)",
@@ -195,7 +195,7 @@ export default function IoTPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-extrabold text-white">
-                Monitoring <span className="text-cyan-400">IoT ESP32</span>
+                Monitoring <span className="text-cyan-400">IoT System</span>
               </h1>
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
@@ -301,7 +301,7 @@ export default function IoTPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <div className="p-3 rounded-lg bg-white/5">
                     <p className="text-[10px] text-slate-400 mb-1">Metode Pengiriman</p>
-                    <p className="text-xs font-bold text-white">Wi-Fi (ESP32 Node)</p>
+                    <p className="text-xs font-bold text-white">Wi-Fi</p>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5">
                     <p className="text-[10px] text-slate-400 mb-1">Waktu Pembaruan</p>
